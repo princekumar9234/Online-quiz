@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-color: #e0e5ec;
+  --text-color: #44475a;
+  --shadow-light: #ffffff;
+  --shadow-dark: #a3b1c6;
+  --accent-blue: #6d5dfc;
+  --accent-red: #ff3b3b;
+  --accent-green: #00d2ff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+  user-select: none;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+}
+
+.calculator-wrapper {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.neumorphic-body {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-color);
+  padding: 30px;
+  border-radius: 40px;
+  box-shadow: 20px 20px 60px var(--shadow-dark),
+              -20px -20px 60px var(--shadow-light);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Display Screen */
+.neu-screen {
+  width: 100%;
+  background: var(--bg-color);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: inset 8px 8px 16px var(--shadow-dark),
+              inset -8px -8px 16px var(--shadow-light);
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.expression-box {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: #7a8296;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+}
+
+.result-box {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-color);
+  word-break: break-all;
+  text-align: right;
+}
+
+/* Button Grid */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.scientific-active .button-grid {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+/* Button Base */
+.neu-btn {
+  height: 64px;
+  border-radius: 16px;
+  border: none;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 6px 6px 12px var(--shadow-dark),
+              -6px -6px 12px var(--shadow-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.neu-btn:hover {
+  color: var(--accent-blue);
+}
+
+.neu-btn:active {
+  box-shadow: inset 4px 4px 8px var(--shadow-dark),
+              inset -4px -4px 8px var(--shadow-light);
+  transform: scale(0.98);
+}
+
+.btn-op {
+  color: var(--accent-blue);
+}
+
+.btn-spec {
+  font-size: 0.95rem;
+  color: #5d6d7e;
+}
+
+.btn-clear {
+  color: var(--accent-red);
+}
+
+.btn-wide {
+  grid-column: span 2;
+}
+
+/* Mode Switcher */
+.mode-toggle {
+  display: flex;
+  align-self: center;
+  background: var(--bg-color);
+  padding: 8px;
+  border-radius: 30px;
+  box-shadow: inset 4px 4px 8px var(--shadow-dark),
+              inset -4px -4px 8px var(--shadow-light);
+  gap: 5px;
+}
+
+.toggle-item {
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #7a8296;
+}
+
+.toggle-item.active {
+  background: var(--bg-color);
+  box-shadow: 4px 4px 8px var(--shadow-dark),
+              -4px -4px 8px var(--shadow-light);
+  color: var(--accent-blue);
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .neumorphic-body {
+    padding: 20px;
+    border-radius: 30px;
+  }
+  
+  .result-box {
+    font-size: 2.2rem;
+  }
+  
+  .neu-btn {
+    height: 56px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .button-grid {
+    gap: 8px;
+  }
+  .neu-btn {
+    height: 50px;
+  }
+}
