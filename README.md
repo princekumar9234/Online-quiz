@@ -58,7 +58,7 @@ src/
    ```
 2. Navigate to the project directory:
    ```bash
-   cd Scientific-Calculator
+   cd Online-quiz
    ```
 3. Install dependencies:
    ```bash
