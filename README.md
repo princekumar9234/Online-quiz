@@ -49,7 +49,7 @@ A premium, modern Scientific Calculator built with **React**, **Math.js**, and *
 
 ## 📸 Screenshots
 
-*(Add screenshots here manually if needed)*
+![solar system with all planets](image.png)
 
 ## 📄 License
 
