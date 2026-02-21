@@ -23,21 +23,25 @@ A premium, modern Scientific Calculator built with **React**, **Math.js**, and *
 ## 🛠️ Installation & Setup
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/princekumar9234/Scientific-Calculator.git
    ```
 
 2. **Navigate to the project directory:**
+
    ```bash
    cd Scientific-Calculator
    ```
 
 3. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 4. **Start the development server:**
+
    ```bash
    npm run dev
    ```
@@ -49,11 +53,12 @@ A premium, modern Scientific Calculator built with **React**, **Math.js**, and *
 
 ## 📸 Screenshots
 
-![solar system with all planets](image.png)
+![Sentific-Calculator](image.png)
 
 ## 📄 License
 
 This project is open-source and available under the [MIT License](LICENSE).
 
 ---
+
 Developed with ❤️ by [Prince Kumar](https://github.com/princekumar9234)
