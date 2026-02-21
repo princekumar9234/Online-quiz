@@ -1,154 +1,188 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { create, all } from 'mathjs';
+import React, { useState, useEffect } from 'react';
+import { initialQuestions } from './questions';
+import QuestionCard from './components/QuestionCard';
+import ResultScreen from './components/ResultScreen';
+import AddQuestionForm from './components/AddQuestionForm';
 
-const math = create(all);
+function App() {
+  const [questions, setQuestions] = useState(initialQuestions);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  
+  // New Interactive States
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [lifelinesUsed, setLifelinesUsed] = useState({ fiftyFifty: false });
+  const [hiddenOptions, setHiddenOptions] = useState([]);
 
-const App = () => {
-  const [display, setDisplay] = useState('0');
-  const [expression, setExpression] = useState('');
-  const [isScientific, setIsScientific] = useState(false);
-  const [lastResult, setLastResult] = useState(null);
+  // Timer logic
+  useEffect(() => {
+    if (showResult || showAddForm || isLocked) return;
 
-  const buttons = [
-    // Row 1
-    { label: 'AC', action: 'clear', type: 'clear' },
-    { label: '⌫', action: 'delete', type: 'spec' },
-    { label: '%', action: 'append', val: '%', type: 'spec' },
-    { label: '÷', action: 'append', val: '/', type: 'op' },
-    { label: 'sin', action: 'append', val: 'sin(', type: 'spec', hidden: !isScientific },
+    if (timeLeft === 0) {
+      handleOptionSelect(-1); // Auto-lock if time runs out
+      return;
+    }
 
-    // Row 2
-    { label: '7', action: 'append', val: '7' },
-    { label: '8', action: 'append', val: '8' },
-    { label: '9', action: 'append', val: '9' },
-    { label: '×', action: 'append', val: '*', type: 'op' },
-    { label: 'cos', action: 'append', val: 'cos(', type: 'spec', hidden: !isScientific },
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
 
-    // Row 3
-    { label: '4', action: 'append', val: '4' },
-    { label: '5', action: 'append', val: '5' },
-    { label: '6', action: 'append', val: '6' },
-    { label: '−', action: 'append', val: '-', type: 'op' },
-    { label: 'tan', action: 'append', val: 'tan(', type: 'spec', hidden: !isScientific },
+    return () => clearInterval(timer);
+  }, [timeLeft, showResult, showAddForm, isLocked]);
 
-    // Row 4
-    { label: '1', action: 'append', val: '1' },
-    { label: '2', action: 'append', val: '2' },
-    { label: '3', action: 'append', val: '3' },
-    { label: '+', action: 'append', val: '+', type: 'op' },
-    { label: 'log', action: 'append', val: 'log10(', type: 'spec', hidden: !isScientific },
+  // Handle option selection
+  const handleOptionSelect = (index) => {
+    if (isLocked) return;
+    
+    setSelectedOption(index);
+    setIsLocked(true);
 
-    // Row 5
-    { label: '0', action: 'append', val: '0', className: 'btn-wide' },
-    { label: '.', action: 'append', val: '.' },
-    { label: '=', action: 'calculate', type: 'op' },
-    { label: 'ln', action: 'append', val: 'log(', type: 'spec', hidden: !isScientific },
+    const isCorrect = index === questions[currentIndex].correctAnswer;
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+    }
 
-    // Scientific Only Row
-    { label: '(', action: 'append', val: '(', type: 'spec', hidden: !isScientific },
-    { label: ')', action: 'append', val: ')', type: 'spec', hidden: !isScientific },
-    { label: 'π', action: 'append', val: 'pi', type: 'spec', hidden: !isScientific },
-    { label: 'e', action: 'append', val: 'e', type: 'spec', hidden: !isScientific },
-    { label: '√', action: 'append', val: 'sqrt(', type: 'spec', hidden: !isScientific },
-    { label: '^', action: 'append', val: '^', type: 'spec', hidden: !isScientific },
-    { label: 'deg', action: 'append', val: 'deg', type: 'spec', hidden: !isScientific },
-  ];
+    const newUserAnswers = [...userAnswers];
+    newUserAnswers[currentIndex] = index;
+    setUserAnswers(newUserAnswers);
+  };
 
-  const handleAction = (btn) => {
-    switch (btn.action) {
-      case 'append':
-        if (display === '0' || lastResult !== null) {
-          setDisplay(btn.val);
-          setLastResult(null);
-        } else {
-          setDisplay(prev => prev + btn.val);
-        }
-        break;
-      case 'clear':
-        setDisplay('0');
-        setExpression('');
-        setLastResult(null);
-        break;
-      case 'delete':
-        if (display.length > 1) {
-          setDisplay(prev => prev.slice(0, -1));
-        } else {
-          setDisplay('0');
-        }
-        break;
-      case 'calculate':
-        try {
-          const result = math.evaluate(display);
-          setExpression(display + ' =');
-          const formattedResult = Number.isFinite(result) ? 
-            (Number.isInteger(result) ? result : result.toFixed(8).replace(/\.?0+$/, "")) : 
-            "Infinity";
-          setDisplay(String(formattedResult));
-          setLastResult(result);
-        } catch (error) {
-          setDisplay('Error');
-          setTimeout(() => setDisplay('0'), 1500);
-        }
-        break;
+  // Move to next question
+  const handleNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setSelectedOption(null);
+      setIsLocked(false);
+      setTimeLeft(30);
+      setHiddenOptions([]);
+    } else {
+      setShowResult(true);
     }
   };
 
+  // Lifeline Logic: Hide 2 random wrong answers
+  const handleLifeline = () => {
+    if (lifelinesUsed.fiftyFifty || isLocked) return;
+    
+    const currentQ = questions[currentIndex];
+    const wrongOptions = currentQ.options
+      .map((_, i) => i)
+      .filter(i => i !== currentQ.correctAnswer);
+    
+    // Sort randomly and pick 2
+    const toHide = wrongOptions.sort(() => Math.random() - 0.5).slice(0, 2);
+    
+    setHiddenOptions(toHide);
+    setLifelinesUsed(prev => ({ ...prev, fiftyFifty: true }));
+  };
+
+  const handleQuit = () => {
+    if (window.confirm("Are you sure you want to quit?")) {
+      resetQuiz();
+    }
+  };
+
+  const resetQuiz = () => {
+    setCurrentIndex(0);
+    setScore(0);
+    setSelectedOption(null);
+    setIsLocked(false);
+    setShowResult(false);
+    setUserAnswers([]);
+    setTimeLeft(30);
+    setLifelinesUsed({ fiftyFifty: false });
+    setHiddenOptions([]);
+  };
+
+  const handleAddQuestion = (newQuestion) => {
+    setQuestions(prev => [...prev, newQuestion]);
+  };
+
+  const progress = ((currentIndex + (isLocked ? 1 : 0)) / questions.length) * 100;
+
   return (
-    <div className="calculator-wrapper">
-      <motion.div 
-        layout
-        className={`neumorphic-body ${isScientific ? 'scientific-active' : ''}`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      >
-        <div className="mode-toggle">
-          <div 
-            className={`toggle-item ${!isScientific ? 'active' : ''}`}
-            onClick={() => setIsScientific(false)}
-          >
-            STANDARD
+    <div className="quiz-container fade-in">
+      {!showResult && !showAddForm && (
+        <>
+          <div className="timer-container">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span className="timer-text">{timeLeft}s</span>
           </div>
-          <div 
-            className={`toggle-item ${isScientific ? 'active' : ''}`}
-            onClick={() => setIsScientific(true)}
-          >
-            SCIENTIFIC
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '500' }}>
+              SCORE: <span style={{ color: 'var(--primary)', fontWeight: '800' }}>{score * 1000} XP</span>
+            </div>
+            <button 
+              className="btn-secondary" 
+              style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '8px' }}
+              onClick={() => setShowAddForm(true)}
+            >
+              + CUSTOM Q
+            </button>
           </div>
-        </div>
 
-        <div className="neu-screen">
-          <div className="expression-box">{expression}</div>
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={display}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="result-box"
-            >
-              {display}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+          <div className="progress-container">
+            <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+          </div>
 
-        <div className="button-grid">
-          {buttons.filter(b => !b.hidden).map((btn, idx) => (
-            <motion.button
-              key={idx}
-              layout
-              whileTap={{ scale: 0.95 }}
-              className={`neu-btn ${btn.type ? `btn-${btn.type}` : ''} ${btn.className || ''}`}
-              onClick={() => handleAction(btn)}
+          <QuestionCard
+            question={questions[currentIndex]}
+            currentNumber={currentIndex + 1}
+            totalQuestions={questions.length}
+            selectedOption={selectedOption}
+            isLocked={isLocked}
+            onOptionSelect={handleOptionSelect}
+            hiddenOptions={hiddenOptions}
+          />
+
+          <div className="quiz-footer">
+            <button className="btn-secondary" onClick={handleQuit}>Quit</button>
+            <button 
+              className="btn-secondary" 
+              onClick={handleLifeline} 
+              disabled={lifelinesUsed.fiftyFifty || isLocked}
+              style={{ border: lifelinesUsed.fiftyFifty ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--secondary)' }}
             >
-              {btn.label}
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
+              {lifelinesUsed.fiftyFifty ? "50:50 USED" : "50:50 LIFELINE"}
+            </button>
+            <button 
+              className="btn-primary" 
+              onClick={handleNext} 
+              disabled={selectedOption === null && timeLeft > 0}
+            >
+              {currentIndex === questions.length - 1 ? "FINISH" : "NEXT"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {showResult && (
+        <ResultScreen
+          score={score}
+          totalQuestions={questions.length}
+          userAnswers={userAnswers}
+          questions={questions}
+          onRestart={resetQuiz}
+        />
+      )}
+
+      {showAddForm && (
+        <AddQuestionForm
+          onAdd={handleAddQuestion}
+          onCancel={() => setShowAddForm(false)}
+        />
+      )}
     </div>
   );
-};
+}
 
 export default App;
