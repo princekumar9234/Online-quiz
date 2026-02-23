@@ -5,7 +5,15 @@ import ResultScreen from './components/ResultScreen';
 import AddQuestionForm from './components/AddQuestionForm';
 
 function App() {
-  const [questions, setQuestions] = useState(initialQuestions);
+  const [questions, setQuestions] = useState(() => {
+    try {
+      const savedQuestions = localStorage.getItem('online_quiz_data');
+      return savedQuestions ? JSON.parse(savedQuestions) : initialQuestions;
+    } catch (error) {
+      console.error("Error loading questions from localStorage:", error);
+      return initialQuestions;
+    }
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -34,6 +42,11 @@ function App() {
 
     return () => clearInterval(timer);
   }, [timeLeft, showResult, showAddForm, isLocked]);
+
+  // Persist questions to localStorage
+  useEffect(() => {
+    localStorage.setItem('online_quiz_data', JSON.stringify(questions));
+  }, [questions]);
 
   // Handle option selection
   const handleOptionSelect = (index) => {
@@ -100,7 +113,11 @@ function App() {
   };
 
   const handleAddQuestion = (newQuestion) => {
-    setQuestions(prev => [...prev, newQuestion]);
+    setQuestions(prev => {
+      const updated = [...prev, newQuestion];
+      localStorage.setItem('online_quiz_data', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const progress = ((currentIndex + (isLocked ? 1 : 0)) / questions.length) * 100;
